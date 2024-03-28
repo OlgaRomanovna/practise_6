@@ -1,0 +1,58 @@
+---
+- name: Install Docker and PostgreSQL
+  hosts: all
+  become: true
+  vars:
+    postgres_version: "10"  # Версия PostgreSQL
+    postgres_data_dir: "/var/lib/postgresql/{{ postgres_version }}/main"  # Директория данных PostgreSQL
+  tasks:
+    - name: Install Docker
+      hosts: app
+      become: true
+      tasks:
+        - name: Install required packages for Docker
+          apt:
+            name: "{{ item }}"
+            state: present
+          loop:
+            - apt-transport-https
+            - ca-certificates
+            - curl
+            - gnupg-agent
+            - software-properties-common
+
+        - name: Add Docker's official GPG key
+          apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
+
+        - name: Add Docker repository
+          apt_repository:
+            repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+            state: present
+
+        - name: Install Docker
+          apt:
+            name: docker-ce docker-ce-cli containerd.io
+            state: present
+
+        - name: Start and enable Docker service
+          service:
+            name: docker
+            state: started
+            enabled: true
+
+    - name: Install PostgreSQL
+      hosts: database
+      become: true
+      tasks:
+        - name: Install PostgreSQL
+          apt:
+            name: postgresql-{{ postgres_version }}
+            state: present
+
+        - name: Ensure PostgreSQL service is started
+          service:
+            name: postgresql
+            state: started
+            enabled: true

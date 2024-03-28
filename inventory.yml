@@ -1,0 +1,10 @@
+database:
+  hosts:
+    vm1:
+web:
+  hosts:
+    vm1:
+app:
+  hosts:
+    vm2:
+    vm3:
